@@ -1,27 +1,33 @@
 // ============================================================
 // WAIMAKERS News Dashboard
 // ============================================================
-// Dit dashboard wacht op data van een andere agent.
-// Roep window.loadNewsData(articles) aan om het te vullen.
+// This dashboard waits for data from another agent.
+// Call window.loadNewsData(articles) to populate it.
 // ============================================================
 
-// Placeholder voor nieuwsartikelen
+// Placeholder for news articles
 let newsArticles = [];
 
 // State
 let currentArticle = null;
+let userName = 'there'; // Default name
+let onStartCallback = null; // Callback when user clicks Start
 
 // DOM Elements
 const articlesList = document.getElementById('articles-list');
 const articleDetail = document.getElementById('article-detail');
 const btnBack = document.getElementById('btn-back');
 const loadingState = document.getElementById('loading-state');
+const welcomeScreen = document.getElementById('welcome-screen');
+const mainContent = document.getElementById('main-content');
+const header = document.querySelector('.header');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     setupDetailView();
-    showLoadingState();
+    setupWelcomeScreen();
     updateHeaderDate();
+    updateGreeting();
 });
 
 // ============================================================
@@ -90,6 +96,26 @@ window.setPodcastLink = function(url) {
     }
 };
 
+/**
+ * Set the user's name for the greeting
+ * @param {string} name - User's name
+ */
+window.setUserName = function(name) {
+    userName = name;
+    updateGreeting();
+    console.log(`👤 WAIMAKERS News: User name set to ${name}`);
+};
+
+/**
+ * Set the callback for when user clicks Start
+ * This is called when the user wants to fetch news
+ * @param {Function} callback - Function to call when start is clicked
+ */
+window.onStartFetchNews = function(callback) {
+    onStartCallback = callback;
+    console.log('📡 WAIMAKERS News: Start callback registered');
+};
+
 // ============================================================
 // INTERNAL FUNCTIONS
 // ============================================================
@@ -102,6 +128,57 @@ function showLoadingState() {
 function hideLoadingState() {
     loadingState.classList.add('hidden');
     articlesList.classList.remove('hidden');
+}
+
+// Setup welcome screen
+function setupWelcomeScreen() {
+    const btnStart = document.getElementById('btn-start');
+    
+    // Initially hide main content and header
+    if (mainContent) mainContent.style.display = 'none';
+    if (header) header.style.display = 'none';
+    
+    btnStart.addEventListener('click', () => {
+        // Hide welcome screen with animation
+        welcomeScreen.classList.add('hidden');
+        
+        // Show main content and header
+        setTimeout(() => {
+            if (mainContent) mainContent.style.display = 'block';
+            if (header) header.style.display = 'flex';
+            showLoadingState();
+            
+            // Call the start callback if registered
+            if (onStartCallback) {
+                onStartCallback();
+            }
+            
+            console.log('▶️ WAIMAKERS News: Start clicked, fetching news...');
+        }, 300);
+    });
+}
+
+// Update the greeting based on time of day and user name
+function updateGreeting() {
+    const welcomeTitle = document.querySelector('.welcome-title');
+    const welcomeGreeting = document.getElementById('welcome-greeting');
+    
+    const hour = new Date().getHours();
+    let timeGreeting = 'Good morning';
+    
+    if (hour >= 12 && hour < 17) {
+        timeGreeting = 'Good afternoon';
+    } else if (hour >= 17 || hour < 5) {
+        timeGreeting = 'Good evening';
+    }
+    
+    if (welcomeTitle) {
+        welcomeTitle.textContent = `${timeGreeting}!`;
+    }
+    
+    if (welcomeGreeting) {
+        welcomeGreeting.textContent = `Hello ${userName}, here's your news today.`;
+    }
 }
 
 function updateHeaderDate() {
@@ -240,4 +317,8 @@ function closeArticleDetail() {
 // LOG
 // ============================================================
 console.log('🚀 WAIMAKERS News Dashboard ready');
-console.log('📡 Waiting for data... Call window.loadNewsData(articles)');
+console.log('📡 API Functions available:');
+console.log('   - window.setUserName(name) - Set user name for greeting');
+console.log('   - window.onStartFetchNews(callback) - Register callback for Start button');
+console.log('   - window.loadNewsData(articles) - Load news articles');
+console.log('   - window.setPodcastLink(url) - Set podcast link');
