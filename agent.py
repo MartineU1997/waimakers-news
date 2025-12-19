@@ -6,6 +6,7 @@ This agent serves the news dashboard and provides an API for other agents to:
 - Set podcast link
 - Load news articles
 - Trigger the dashboard to refresh
+- Automatically fetch AI news from configured sources
 
 Run with: python agent.py
 Dashboard will be available at: http://localhost:8080
@@ -16,6 +17,14 @@ import os
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import threading
+
+# Import the news fetcher
+try:
+    from news_fetcher import fetch_all_news
+    NEWS_FETCHER_AVAILABLE = True
+except ImportError:
+    NEWS_FETCHER_AVAILABLE = False
+    print("⚠️ news_fetcher.py not found - automatic news fetching disabled")
 
 # Store state that will be injected into the dashboard
 dashboard_state = {
@@ -102,6 +111,27 @@ class DashboardAgentHandler(SimpleHTTPRequestHandler):
             dashboard_state['ready'] = False
             self.send_json_response({"success": True})
             print("🗑️ Dashboard cleared")
+            return
+        
+        # API: Fetch news (called when Start is clicked)
+        if parsed_path.path == '/api/fetch':
+            if NEWS_FETCHER_AVAILABLE:
+                print("🔄 Start button clicked - fetching news...")
+                # Fetch in background thread
+                def fetch_and_update():
+                    try:
+                        articles = fetch_all_news(max_articles=10)
+                        dashboard_state['articles'] = articles
+                        dashboard_state['ready'] = True
+                        print(f"✅ Loaded {len(articles)} articles into dashboard")
+                    except Exception as e:
+                        print(f"❌ Error fetching news: {e}")
+                
+                thread = threading.Thread(target=fetch_and_update)
+                thread.start()
+                self.send_json_response({"success": True, "message": "Fetching news..."})
+            else:
+                self.send_json_response({"success": False, "message": "News fetcher not available"})
             return
         
         self.send_error_response(404, "Unknown endpoint")

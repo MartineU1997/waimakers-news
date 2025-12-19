@@ -156,12 +156,28 @@ function setupWelcomeScreen() {
                 onStartCallback();
             }
             
+            // Trigger news fetch on the agent
+            triggerNewsFetch();
+            
             // Start polling for news data from agent
             startPollingForNews();
             
             console.log('▶️ WAIMAKERS News: Start clicked, fetching news...');
         }, 300);
     });
+}
+
+// Trigger news fetch on the agent
+async function triggerNewsFetch() {
+    try {
+        const response = await fetch('/api/fetch', { method: 'POST' });
+        if (response.ok) {
+            const result = await response.json();
+            console.log('📡 News fetch triggered:', result.message);
+        }
+    } catch (e) {
+        console.log('📡 Running in standalone mode (no agent API)');
+    }
 }
 
 // Fetch state from the agent API
