@@ -78,6 +78,18 @@ window.getNewsData = function() {
     return newsArticles;
 };
 
+/**
+ * Set the podcast link
+ * @param {string} url - URL to the podcast
+ */
+window.setPodcastLink = function(url) {
+    const podcastLink = document.getElementById('podcast-link');
+    if (podcastLink) {
+        podcastLink.href = url;
+        console.log(`🎙️ WAIMAKERS News: Podcast link set to ${url}`);
+    }
+};
+
 // ============================================================
 // INTERNAL FUNCTIONS
 // ============================================================
