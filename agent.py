@@ -31,6 +31,7 @@ dashboard_state = {
     "user_name": "there",
     "podcast_link": "",
     "articles": [],
+    "summary": "",
     "ready": False
 }
 
@@ -120,12 +121,16 @@ class DashboardAgentHandler(SimpleHTTPRequestHandler):
                 # Fetch in background thread
                 def fetch_and_update():
                     try:
-                        articles = fetch_all_news(max_articles=10)
-                        dashboard_state['articles'] = articles
+                        result = fetch_all_news(max_articles=10)
+                        dashboard_state['articles'] = result['articles']
+                        dashboard_state['summary'] = result['summary']
                         dashboard_state['ready'] = True
-                        print(f"✅ Loaded {len(articles)} articles into dashboard")
+                        print(f"✅ Loaded {len(result['articles'])} articles into dashboard")
+                        print(f"📝 Generated summary")
                     except Exception as e:
                         print(f"❌ Error fetching news: {e}")
+                        import traceback
+                        traceback.print_exc()
                 
                 thread = threading.Thread(target=fetch_and_update)
                 thread.start()

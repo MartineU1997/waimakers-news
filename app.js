@@ -21,6 +21,9 @@ const loadingState = document.getElementById('loading-state');
 const welcomeScreen = document.getElementById('welcome-screen');
 const mainContent = document.getElementById('main-content');
 const header = document.querySelector('.header');
+const dailySummary = document.getElementById('daily-summary');
+const summaryContent = document.getElementById('summary-content');
+const articlesHeader = document.getElementById('articles-header');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -233,6 +236,17 @@ async function checkForNewsData() {
                 // Load the articles
                 newsArticles = state.articles;
                 hideLoadingState();
+                
+                // Display summary
+                if (state.summary) {
+                    displaySummary(state.summary);
+                }
+                
+                // Show articles header
+                if (articlesHeader) {
+                    articlesHeader.classList.remove('hidden');
+                }
+                
                 renderArticles();
                 console.log(`✅ Received ${state.articles.length} articles from agent`);
             }
@@ -240,6 +254,22 @@ async function checkForNewsData() {
     } catch (e) {
         // Agent not available
     }
+}
+
+// Display the daily summary
+function displaySummary(summary) {
+    if (!dailySummary || !summaryContent) return;
+    
+    // Convert markdown-like formatting to HTML
+    let html = summary
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+        .replace(/\n\n/g, '</p><p>')  // Paragraphs
+        .replace(/\n/g, '<br>');  // Line breaks
+    
+    html = '<p>' + html + '</p>';
+    
+    summaryContent.innerHTML = html;
+    dailySummary.classList.remove('hidden');
 }
 
 // Update the greeting based on time of day and user name

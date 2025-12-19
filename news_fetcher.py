@@ -281,10 +281,91 @@ def fetch_news_from_source(source):
     return []
 
 
+def generate_daily_summary(articles):
+    """
+    Generate a narrative summary of today's AI news.
+    Groups articles by theme and creates a cohesive story.
+    """
+    if not articles:
+        return "No news available yet. Click Start to fetch the latest AI updates."
+    
+    # Categorize articles by theme
+    themes = {
+        "big_tech": [],      # OpenAI, Google, Microsoft, Anthropic
+        "funding": [],       # Funding, valuation, investment
+        "products": [],      # New products, launches, features
+        "research": [],      # Research, papers, breakthroughs
+        "regulation": [],    # EU, regulation, policy
+        "other": []
+    }
+    
+    for article in articles:
+        title_lower = article['title'].lower()
+        source_lower = article['source'].lower()
+        
+        if any(x in title_lower for x in ['openai', 'google', 'microsoft', 'anthropic', 'nvidia', 'meta']):
+            themes['big_tech'].append(article)
+        elif any(x in title_lower for x in ['funding', 'raises', 'valuation', 'investment', 'billion', 'million']):
+            themes['funding'].append(article)
+        elif any(x in title_lower for x in ['launch', 'release', 'introduce', 'announce', 'new', 'update']):
+            themes['products'].append(article)
+        elif any(x in title_lower for x in ['research', 'study', 'paper', 'discover', 'breakthrough']):
+            themes['research'].append(article)
+        elif any(x in title_lower for x in ['eu', 'regulation', 'law', 'policy', 'government']):
+            themes['regulation'].append(article)
+        else:
+            themes['other'].append(article)
+    
+    # Build narrative summary
+    summary_parts = []
+    
+    # Opening
+    today = datetime.now().strftime("%A, %B %d")
+    summary_parts.append(f"Here's what's happening in the world of AI on {today}:")
+    
+    # Big Tech news
+    if themes['big_tech']:
+        companies = set()
+        for a in themes['big_tech'][:3]:
+            for company in ['OpenAI', 'Google', 'Microsoft', 'Anthropic', 'NVIDIA', 'Meta']:
+                if company.lower() in a['title'].lower():
+                    companies.add(company)
+        
+        if companies:
+            company_list = ', '.join(sorted(companies))
+            summary_parts.append(f"\n\n**Big Tech Moves:** {company_list} made headlines today. " + 
+                               themes['big_tech'][0]['title'] + ".")
+    
+    # Funding news
+    if themes['funding']:
+        summary_parts.append(f"\n\n**Investment & Funding:** " + themes['funding'][0]['title'] + ".")
+    
+    # Product launches
+    if themes['products']:
+        summary_parts.append(f"\n\n**Product Updates:** " + themes['products'][0]['title'] + ".")
+    
+    # Research
+    if themes['research']:
+        summary_parts.append(f"\n\n**Research & Innovation:** " + themes['research'][0]['title'] + ".")
+    
+    # Regulation
+    if themes['regulation']:
+        summary_parts.append(f"\n\n**Policy & Regulation:** " + themes['regulation'][0]['title'] + ".")
+    
+    # Add interesting other news if we don't have much
+    if len(summary_parts) < 4 and themes['other']:
+        summary_parts.append(f"\n\n**Also noteworthy:** " + themes['other'][0]['title'] + ".")
+    
+    # Closing
+    summary_parts.append(f"\n\nScroll down for more details on each story.")
+    
+    return ''.join(summary_parts)
+
+
 def fetch_all_news(max_articles=10):
     """
     Fetch news from all configured sources.
-    Returns a list of articles sorted by date (newest first).
+    Returns a dict with 'articles' list and 'summary' string.
     """
     print("🔄 Fetching AI news from sources...")
     
@@ -333,7 +414,13 @@ def fetch_all_news(max_articles=10):
         article['id'] = i + 1
         result.append(article)
     
-    return result
+    # Generate summary
+    summary = generate_daily_summary(all_articles[:max_articles])
+    
+    return {
+        "articles": result,
+        "summary": summary
+    }
 
 
 def fetch_news_async(callback):
@@ -354,7 +441,14 @@ if __name__ == '__main__':
     print("WAIMAKERS News Fetcher - Test Run")
     print("=" * 60)
     
-    articles = fetch_all_news(max_articles=10)
+    result = fetch_all_news(max_articles=10)
+    articles = result['articles']
+    summary = result['summary']
+    
+    print("\n" + "=" * 60)
+    print("TODAY'S AI BRIEFING")
+    print("=" * 60)
+    print(summary)
     
     print("\n" + "=" * 60)
     print(f"TOP {len(articles)} AI NEWS ARTICLES")

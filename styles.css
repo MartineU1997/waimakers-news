@@ -558,6 +558,86 @@ body::before {
     transform: translateX(4px);
 }
 
+/* === Daily Summary === */
+.daily-summary {
+    background: linear-gradient(135deg, var(--color-accent-bg) 0%, var(--color-bg-card) 100%);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 32px;
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.daily-summary.hidden {
+    display: none;
+}
+
+.summary-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.summary-icon {
+    font-size: 28px;
+}
+
+.summary-header h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.summary-content {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+}
+
+.summary-content p {
+    margin-bottom: 12px;
+}
+
+.summary-content p:last-child {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.summary-content strong {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+/* === Articles Header === */
+.articles-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.articles-header.hidden {
+    display: none;
+}
+
+.articles-header h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 4px 0;
+}
+
+.articles-header p {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
 /* === Animations === */
 .article-card {
     animation: fadeInUp 0.4s ease forwards;
