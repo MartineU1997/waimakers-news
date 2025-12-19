@@ -138,6 +138,9 @@ function setupWelcomeScreen() {
     if (mainContent) mainContent.style.display = 'none';
     if (header) header.style.display = 'none';
     
+    // Fetch initial state from agent API
+    fetchStateFromAgent();
+    
     btnStart.addEventListener('click', () => {
         // Hide welcome screen with animation
         welcomeScreen.classList.add('hidden');
@@ -153,9 +156,74 @@ function setupWelcomeScreen() {
                 onStartCallback();
             }
             
+            // Start polling for news data from agent
+            startPollingForNews();
+            
             console.log('▶️ WAIMAKERS News: Start clicked, fetching news...');
         }, 300);
     });
+}
+
+// Fetch state from the agent API
+async function fetchStateFromAgent() {
+    try {
+        const response = await fetch('/api/state');
+        if (response.ok) {
+            const state = await response.json();
+            
+            // Apply state
+            if (state.user_name) {
+                userName = state.user_name;
+                updateGreeting();
+            }
+            
+            if (state.podcast_link) {
+                const podcastLink = document.getElementById('podcast-link');
+                if (podcastLink) podcastLink.href = state.podcast_link;
+            }
+            
+            console.log('📡 Fetched state from agent:', state);
+        }
+    } catch (e) {
+        // Agent API not available, using standalone mode
+        console.log('📡 Running in standalone mode (no agent API)');
+    }
+}
+
+// Poll for news data from agent
+let pollingInterval = null;
+
+function startPollingForNews() {
+    // Check immediately
+    checkForNewsData();
+    
+    // Then poll every 2 seconds
+    pollingInterval = setInterval(checkForNewsData, 2000);
+}
+
+async function checkForNewsData() {
+    try {
+        const response = await fetch('/api/state');
+        if (response.ok) {
+            const state = await response.json();
+            
+            if (state.ready && state.articles && state.articles.length > 0) {
+                // Stop polling
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+                
+                // Load the articles
+                newsArticles = state.articles;
+                hideLoadingState();
+                renderArticles();
+                console.log(`✅ Received ${state.articles.length} articles from agent`);
+            }
+        }
+    } catch (e) {
+        // Agent not available
+    }
 }
 
 // Update the greeting based on time of day and user name
