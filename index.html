@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAIMAKERS News</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">◉</span>
+            <span class="logo-text">WAIMAKERS <span class="logo-accent">News</span></span>
+        </div>
+        <div class="header-right">
+            <span class="header-date" id="header-date"></span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Your News</h1>
+            <p class="page-subtitle">Top updates based on your interests</p>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Fetching news...</p>
+        </div>
+
+        <!-- Articles List -->
+        <div class="articles-list" id="articles-list">
+            <!-- Articles will be injected by the data agent -->
+        </div>
+    </main>
+
+    <!-- Article Detail View (Hidden by default) -->
+    <div class="article-detail" id="article-detail">
+        <header class="detail-header">
+            <button class="btn-back" id="btn-back">
+                <span>←</span>
+                Back
+            </button>
+            <div class="logo">
+                <span class="logo-icon">◉</span>
+                <span class="logo-text">WAIMAKERS <span class="logo-accent">News</span></span>
+            </div>
+            <div class="detail-header-spacer"></div>
+        </header>
+
+        <div class="detail-content">
+            <div class="detail-main">
+                <div class="detail-meta">
+                    <span class="detail-source" id="detail-source"></span>
+                    <span class="detail-time" id="detail-time"></span>
+                </div>
+                
+                <h1 class="detail-title" id="detail-title"></h1>
+                <p class="detail-summary" id="detail-summary"></p>
+
+                <div class="detail-overview" id="detail-overview-section">
+                    <h3>Summary</h3>
+                    <ul class="overview-list" id="overview-list">
+                        <!-- Overview points injected by JS -->
+                    </ul>
+                </div>
+
+                <a href="#" class="btn-read-full" id="btn-read-full" target="_blank">
+                    <span>Read full article</span>
+                    <span class="arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
