@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "waimakers-news": {
+      "command": "python3",
+      "args": ["agent.py"],
+      "cwd": "/Users/martineuijland/Downloads/AI Hackaton"
+    },
+    "elevenlabs": {
+      "command": "python3",
+      "args": ["-m", "elevenlabs_mcp.server"],
+      "cwd": "/Users/martineuijland/Downloads/AI Hackaton",
+      "env": {
+        "ELEVENLABS_API_KEY": "90c63ad846b294b4fb9cb6fdd9e183cbe6790e922818ef229b13708b39d0a7c0",
+        "ELEVENLABS_MCP_BASE_PATH": "/Users/martineuijland/Desktop"
+      }
+    }
+  }
+}

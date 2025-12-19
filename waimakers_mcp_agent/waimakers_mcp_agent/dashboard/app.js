@@ -173,26 +173,10 @@ function setupWelcomeScreen() {
 // Trigger news fetch on the agent
 async function triggerNewsFetch() {
     try {
-        // Reset UI elements
-        const podcastSection = document.getElementById('podcast-section');
-        const podcastGenerating = document.getElementById('podcast-generating');
-        const dailySummaryEl = document.getElementById('daily-summary');
-        const articlesHeaderEl = document.getElementById('articles-header');
-        
-        // Hide old content
-        if (podcastSection) podcastSection.classList.add('hidden');
-        if (dailySummaryEl) dailySummaryEl.classList.add('hidden');
-        if (articlesHeaderEl) articlesHeaderEl.classList.add('hidden');
-        
-        // Clear articles
-        newsArticles = [];
-        if (articlesList) articlesList.innerHTML = '';
-        
-        // Trigger fetch
         const response = await fetch('/api/fetch', { method: 'POST' });
         if (response.ok) {
             const result = await response.json();
-            console.log('📡 Fresh news fetch triggered:', result.message);
+            console.log('📡 News fetch triggered:', result.message);
         }
     } catch (e) {
         console.log('📡 Running in standalone mode (no agent API)');
@@ -243,6 +227,12 @@ async function checkForNewsData() {
             const state = await response.json();
             
             if (state.ready && state.articles && state.articles.length > 0) {
+                // Stop polling
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+                
                 // Load the articles
                 newsArticles = state.articles;
                 hideLoadingState();
@@ -259,65 +249,12 @@ async function checkForNewsData() {
                 
                 renderArticles();
                 console.log(`✅ Received ${state.articles.length} articles from agent`);
-                
-                // Handle podcast states
-                const podcastGenerating = document.getElementById('podcast-generating');
-                const podcastSection = document.getElementById('podcast-section');
-                
-                if (state.podcast_file) {
-                    // Podcast is ready - show player
-                    if (podcastGenerating) podcastGenerating.classList.add('hidden');
-                    showPodcastPlayer(state.podcast_file);
-                    
-                    // Stop polling once we have both news and podcast
-                    if (pollingInterval) {
-                        clearInterval(pollingInterval);
-                        pollingInterval = null;
-                        console.log('✅ All content loaded, stopped polling');
-                    }
-                } else if (state.podcast_generating) {
-                    // Podcast is being generated - show spinner
-                    if (podcastGenerating) podcastGenerating.classList.remove('hidden');
-                    if (podcastSection) podcastSection.classList.add('hidden');
-                    console.log('🎙️ Podcast is being generated...');
-                }
             }
         }
     } catch (e) {
         // Agent not available
     }
 }
-
-// Show the podcast player with the audio file
-function showPodcastPlayer(audioFile) {
-    const podcastSection = document.getElementById('podcast-section');
-    const podcastAudioMain = document.getElementById('podcast-audio-main');
-    const podcastSource = document.getElementById('podcast-source');
-    const downloadBtn = document.getElementById('download-btn');
-    
-    if (podcastSection && podcastAudioMain) {
-        // Add cache-busting timestamp
-        const audioUrl = audioFile + '?t=' + Date.now();
-        
-        if (podcastSource) {
-            podcastSource.src = audioUrl;
-        }
-        podcastAudioMain.src = audioUrl;
-        podcastAudioMain.load(); // Force reload
-        
-        if (downloadBtn) {
-            downloadBtn.href = audioFile;
-        }
-        
-        podcastSection.classList.remove('hidden');
-        console.log('🎙️ Podcast player ready:', audioFile);
-    }
-}
-
-// Set podcast audio (callable from outside)
-window.setPodcastAudio = function(audioFile) {
-    showPodcastPlayer(audioFile);
-};
 
 // Display the daily summary
 function displaySummary(summary) {

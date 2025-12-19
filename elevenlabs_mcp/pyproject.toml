@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elevenlabs-mcp-waimakers"
+version = "1.0.0"
+description = "ElevenLabs MCP Server for text-to-speech and podcast generation"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "WAIMAKERS Team"}
+]
+keywords = ["elevenlabs", "mcp", "tts", "text-to-speech", "podcast"]
+
+dependencies = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+elevenlabs-mcp = "elevenlabs_mcp.server:main_sync"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["elevenlabs_mcp*"]

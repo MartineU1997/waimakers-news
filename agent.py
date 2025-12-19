@@ -26,14 +26,90 @@ except ImportError:
     NEWS_FETCHER_AVAILABLE = False
     print("⚠️ news_fetcher.py not found - automatic news fetching disabled")
 
+# ElevenLabs API configuration
+# Get your free API key at: https://elevenlabs.io
+ELEVENLABS_API_KEY = "YOUR_ELEVENLABS_API_KEY_HERE"  # Replace with your key
+ELEVENLABS_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel voice (calm, professional)
+
 # Store state that will be injected into the dashboard
 dashboard_state = {
     "user_name": "there",
     "podcast_link": "",
+    "podcast_file": "",
     "articles": [],
     "summary": "",
-    "ready": False
+    "ready": False,
+    "podcast_generating": False
 }
+
+def reset_dashboard_state():
+    """Reset state for a fresh news fetch"""
+    dashboard_state["articles"] = []
+    dashboard_state["summary"] = ""
+    dashboard_state["podcast_file"] = ""
+    dashboard_state["ready"] = False
+    dashboard_state["podcast_generating"] = False
+
+
+def generate_podcast_script(articles, summary):
+    """Generate a podcast script from news articles"""
+    from datetime import datetime
+    today = datetime.now().strftime("%A, %B %d, %Y")
+    
+    script = f"""Welcome to your WAIMAKERS AI News Briefing for {today}. I'm your host, and here are today's top stories in artificial intelligence.
+
+{summary.replace('**', '').replace('*', '')}
+
+Now, let's go through the top stories in detail.
+
+"""
+    for i, article in enumerate(articles[:5]):
+        script += f"""Story number {i+1}, from {article['source']}:
+{article['title']}
+{article['summary']}
+
+"""
+    
+    script += """That concludes today's AI News Briefing. Thank you for listening, and we'll see you next time. Stay curious about AI!"""
+    
+    return script
+
+
+def generate_podcast_audio(script):
+    """Generate podcast audio using ElevenLabs API"""
+    import urllib.request
+    import urllib.error
+    
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
+    
+    payload = json.dumps({
+        "text": script,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": 0.6,
+            "similarity_boost": 0.8,
+            "style": 0.4,
+            "use_speaker_boost": True
+        }
+    }).encode('utf-8')
+    
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "xi-api-key": ELEVENLABS_API_KEY,
+            "Content-Type": "application/json",
+            "Accept": "audio/mpeg"
+        },
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req, timeout=120) as response:
+            return response.read()
+    except Exception as e:
+        print(f"❌ ElevenLabs Error: {e}")
+        return None
 
 class DashboardAgentHandler(SimpleHTTPRequestHandler):
     """Custom handler that serves the dashboard and handles API calls"""
@@ -117,24 +193,58 @@ class DashboardAgentHandler(SimpleHTTPRequestHandler):
         # API: Fetch news (called when Start is clicked)
         if parsed_path.path == '/api/fetch':
             if NEWS_FETCHER_AVAILABLE:
-                print("🔄 Start button clicked - fetching news...")
+                print("\n" + "="*50)
+                print("🚀 START CLICKED - Fetching fresh news & generating podcast")
+                print("="*50)
+                
+                # Reset state for fresh content
+                reset_dashboard_state()
+                
                 # Fetch in background thread
                 def fetch_and_update():
                     try:
+                        # Step 1: Fetch fresh news
+                        print("\n📰 Step 1: Fetching latest AI news...")
                         result = fetch_all_news(max_articles=10)
                         dashboard_state['articles'] = result['articles']
                         dashboard_state['summary'] = result['summary']
                         dashboard_state['ready'] = True
-                        print(f"✅ Loaded {len(result['articles'])} articles into dashboard")
-                        print(f"📝 Generated summary")
+                        print(f"✅ Loaded {len(result['articles'])} fresh articles")
+                        
+                        # Step 2: Generate NEW podcast
+                        print("\n🎙️ Step 2: Generating NEW podcast with ElevenLabs...")
+                        dashboard_state['podcast_generating'] = True
+                        
+                        script = generate_podcast_script(result['articles'], result['summary'])
+                        print(f"📝 Podcast script ready: {len(script)} characters")
+                        
+                        audio_data = generate_podcast_audio(script)
+                        
+                        if audio_data:
+                            # Save podcast (overwrites previous)
+                            podcast_filename = "podcast.mp3"
+                            podcast_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), podcast_filename)
+                            with open(podcast_path, 'wb') as f:
+                                f.write(audio_data)
+                            
+                            dashboard_state['podcast_file'] = podcast_filename
+                            print(f"✅ NEW podcast saved: {podcast_filename} ({len(audio_data) // 1024} KB)")
+                            print("\n🎉 Done! Fresh news + new podcast ready!")
+                        else:
+                            print("❌ Failed to generate podcast audio")
+                        
+                        dashboard_state['podcast_generating'] = False
+                        print("="*50 + "\n")
+                        
                     except Exception as e:
-                        print(f"❌ Error fetching news: {e}")
+                        print(f"❌ Error: {e}")
                         import traceback
                         traceback.print_exc()
+                        dashboard_state['podcast_generating'] = False
                 
                 thread = threading.Thread(target=fetch_and_update)
                 thread.start()
-                self.send_json_response({"success": True, "message": "Fetching news..."})
+                self.send_json_response({"success": True, "message": "Fetching fresh news and generating new podcast..."})
             else:
                 self.send_json_response({"success": False, "message": "News fetcher not available"})
             return

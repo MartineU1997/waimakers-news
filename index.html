@@ -35,6 +35,14 @@
                 <span class="podcast-icon-subtle">🎧</span>
                 <span>Or listen to the podcast</span>
             </a>
+            
+            <!-- Podcast Player (shows after generation) -->
+            <div class="podcast-player hidden" id="podcast-player-welcome">
+                <div class="player-label">🎙️ Your AI Podcast is ready!</div>
+                <audio controls id="podcast-audio-welcome">
+                    <source src="" type="audio/mpeg">
+                </audio>
+            </div>
         </div>
     </div>
 
@@ -49,6 +57,31 @@
         <div class="loading-state" id="loading-state">
             <div class="loading-spinner"></div>
             <p>Fetching news...</p>
+        </div>
+
+        <!-- Podcast Generating State -->
+        <div class="podcast-generating hidden" id="podcast-generating">
+            <div class="generating-spinner"></div>
+            <span>🎙️ Generating your AI podcast with ElevenLabs...</span>
+        </div>
+
+        <!-- Podcast Player -->
+        <div class="podcast-section hidden" id="podcast-section">
+            <div class="podcast-card">
+                <div class="podcast-header">
+                    <span class="podcast-icon">🎙️</span>
+                    <div class="podcast-info">
+                        <h3>AI News Podcast</h3>
+                        <p>Listen to today's briefing</p>
+                    </div>
+                    <a href="podcast.mp3" download="waimakers_podcast.mp3" class="download-btn" id="download-btn">
+                        ⬇️ Download
+                    </a>
+                </div>
+                <audio controls id="podcast-audio-main" class="podcast-audio">
+                    <source src="podcast.mp3" type="audio/mpeg" id="podcast-source">
+                </audio>
+            </div>
         </div>
 
         <!-- Daily Summary -->
